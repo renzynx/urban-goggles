@@ -1,6 +1,6 @@
 "use client";
 
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconTrash, IconUpload } from "@tabler/icons-react";
 import { useState } from "react";
 import EditComic from "./EditComic";
 
@@ -60,7 +60,7 @@ const ManageComicsTable = ({ data }: { data: ManageComicsTableProps }) => {
                   {data?.map((comic) => (
                     <tr
                       key={comic.id}
-                      className="border-b transition duration-300 ease-in-out hover:bg-zinc-900"
+                      className="border-b transition duration-300 ease-in-out hover:bg-gray-200 dark:hover:bg-zinc-900"
                     >
                       <td className="whitespace-nowrap px-6 py-4">
                         {comic.id}

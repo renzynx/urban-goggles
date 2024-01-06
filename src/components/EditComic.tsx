@@ -3,8 +3,14 @@
 import { createClient } from "@/utils/supabase/client";
 import { FC, Fragment, useEffect, useState } from "react";
 import { ManageComicsTableProps } from "./ManageComicsTable";
-import { IconCheck, IconChevronDown, IconX } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconChevronDown,
+  IconUpload,
+  IconX,
+} from "@tabler/icons-react";
 import { Listbox, Transition } from "@headlessui/react";
+import Image from "next/image";
 
 type EditComicProps = {
   id: number;
@@ -21,6 +27,10 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
   const [data, setData] = useState<ManageComicsTableProps[number]>();
   const supabase = createClient();
 
+  const setTitle = (title: string) => {
+    setData((prev) => ({ ...prev!, title }));
+  };
+
   useEffect(() => {
     supabase
       .from("comics")
@@ -31,27 +41,27 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
   }, []);
 
   return (
-    <div className="lg:max-w-xl max-w-lg w-full absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 flex flex-col place-content-center bg-zinc-900 p-5">
+    <div className="lg:max-w-xl max-w-lg w-full absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 flex flex-col place-content-center bg-gray-100 dark:bg-zinc-900 p-5 border border-foreground/10">
       <div className="flex justify-between w-full mb-8">
-        <button className="bg-emerald-500 hover:bg-emerald-400 px-6 py-2">
+        <button className="bg-emerald-500 hover:bg-emerald-400 px-6 py-2 text-gray-100">
           Save
         </button>
         <button
-          className="bg-red-500 p-2 hover:bg-red-600"
+          className="bg-red-500 p-2 hover:bg-red-600 text-gray-100"
           onClick={() => setSelectedId(null)}
         >
           <IconX />
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex-col flex gap-2 lg:col-span-1 col-span-2">
+      <div className="grid lg:grid-cols-3 md:grid-cols-4 grid-cols-1 gap-4">
+        <div className="flex-col flex gap-2 lg:col-span-1 md:col-span-2 order-1">
           <label className="text-md mr-4" htmlFor="ID">
             ID
           </label>
           {data?.id ? (
             <input
-              className="rounded-md px-4 py-2 bg-inherit dark:text-gray-500 border cursor-not-allowed"
+              className="rounded-md px-4 py-2 bg-inherit dark:text-gray-500 text-zinc-600 border shadow-md cursor-not-allowed"
               name="ID"
               placeholder="you@example.com"
               value={data?.id}
@@ -62,14 +72,14 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
           )}
         </div>
 
-        <div className="flex flex-col gap-2 lg:col-span-1 col-span-2">
+        <div className="flex flex-col gap-2 lg:col-span-1 md:col-span-2 order-2">
           <label className="text-md mr-4" htmlFor="title">
             Title
           </label>
 
           {data?.title ? (
             <input
-              className="rounded-md px-4 py-2 bg-inherit border"
+              className="rounded-md px-4 py-2 bg-inherit border shadow-md"
               name="title"
               value={data.title}
             />
@@ -78,7 +88,30 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
           )}
         </div>
 
-        <div className="flex flex-col gap-2 lg:col-span-1 col-span-2">
+        <div className="flex flex-col gap-2 lg:col-span-1 lg:order-3 order-7 md:col-span-4 row-span-3">
+          <label
+            className="text-sm cursor-pointer bg-blue-500 hover:bg-blue-700 text-white text-center font-bold py-2 px-4 rounded"
+            htmlFor="file-input"
+          >
+            <IconUpload className="mr-2 inline-block" />
+            <p className="inline-block">Upload</p>
+          </label>
+          <input type="file" className="hidden" id="file-input" />
+
+          {data?.thumbnail ? (
+            <Image
+              src={data.thumbnail}
+              alt={data.title}
+              width={100}
+              height={100}
+              className="rounded-md w-full max-h-72"
+            />
+          ) : (
+            <div className="rounded-md px-4 py-5 bg-zinc-800 border cursor-not-allowed animate-pulse" />
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2 lg:col-span-1 md:col-span-2 lg:order-4 order-3">
           <label className="text-md mr-4" htmlFor="modified">
             Modified
           </label>
@@ -86,7 +119,7 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
           {data?.modified ? (
             <input
               type="datetime-local"
-              className="rounded-md px-4 py-2 bg-inherit border"
+              className="rounded-md px-4 py-2 bg-inherit border shadow-md"
               name="modified"
               defaultValue={new Date(data.modified!).toISOString().slice(0, 16)}
             />
@@ -95,28 +128,23 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
           )}
         </div>
 
-        <div className="flex flex-col gap-2 lg:col-span-1 col-span-2">
+        <div className="flex flex-col gap-2 lg:col-span-1 md:col-span-2 lg:order-5 order-4">
           <label className="text-md mr-4" htmlFor="status">
             Status
           </label>
           {data?.status ? (
-            // <input
-            //   className="rounded-md px-4 py-2 bg-inherit border"
-            //   name="status"
-            //   value={data.status!}
-            // />
             <StatusSelect status={data.status} />
           ) : (
             <div className="rounded-md px-4 py-5 bg-zinc-800 border cursor-not-allowed animate-pulse" />
           )}
         </div>
-        <div className="flex flex-col gap-2 col-span-2">
+        <div className="flex flex-col gap-2 lg:col-span-2 md:col-span-4 lg:order-6 order-5">
           <label className="text-md mr-4" htmlFor="desc">
             Description
           </label>
           {data?.description ? (
             <textarea
-              className="rounded-md px-4 py-2 bg-inherit border resize-y max-h-40"
+              className="rounded-md px-4 py-2 bg-inherit border resize-y max-h-40 shadow-md"
               name="desc"
               value={data.description}
             />

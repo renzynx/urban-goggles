@@ -19,6 +19,10 @@
       --btn-background-hover: 200 10% 12%;
       --foreground: 200 20% 96%;
     }
+
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(100%);
+    }
   }
 }
 
