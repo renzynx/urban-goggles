@@ -96,7 +96,7 @@ export interface Database {
           id: number
           modified: string | null
           status: Database["public"]["Enums"]["Status"] | null
-          thumbnail: string
+          thumbnail: string | null
           title: string
         }
         Insert: {
@@ -105,7 +105,7 @@ export interface Database {
           id?: number
           modified?: string | null
           status?: Database["public"]["Enums"]["Status"] | null
-          thumbnail: string
+          thumbnail?: string | null
           title: string
         }
         Update: {
@@ -114,7 +114,7 @@ export interface Database {
           id?: number
           modified?: string | null
           status?: Database["public"]["Enums"]["Status"] | null
-          thumbnail?: string
+          thumbnail?: string | null
           title?: string
         }
         Relationships: [
