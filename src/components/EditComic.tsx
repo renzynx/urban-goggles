@@ -31,6 +31,45 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
     setData((prev) => ({ ...prev!, title }));
   };
 
+
+  const uploadThumbnail = async (file: File): Promise<void> => {
+    if (!file) return;
+
+    try {
+      const ob = data?.thumbnail?.split("/")!;
+
+      console.log(ob);
+
+      const key = `/${ob[ob.length - 2]}/${ob[ob.length - 1]}`
+
+      const { data: existingThumbnail } = await supabase.storage.from("comics").download(key);
+
+      const { error: uploadError } = existingThumbnail
+        ? await supabase.storage.from("comics").update(key, file, {
+          cacheControl: "3600",
+          upsert: true,
+        })
+        : await supabase.storage.from("comics").upload(key, file, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error(uploadError);
+        return;
+      }
+
+      const { data: { publicUrl } } = await supabase.storage
+        .from("comics")
+        .getPublicUrl(key);
+
+
+      setData((prev) => ({ ...prev!, thumbnail: publicUrl }));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     supabase
       .from("comics")
@@ -41,8 +80,8 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
   }, []);
 
   return (
-    <div className="lg:max-w-xl max-w-lg w-full absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 flex flex-col place-content-center bg-gray-100 dark:bg-zinc-900 p-5 border border-foreground/10">
-      <div className="flex justify-between w-full mb-8">
+    <div className="lg:max-h-full md:max-h-full sm:max-h-[80%] max-h-[80%] lg:max-w-3xl md:max-w-3xl max-w-lg w-full fixed top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 flex flex-col place-content-center bg-gray-100 dark:bg-zinc-900 p-5 border border-foreground/10">
+      <div className="flex justify-between w-full mb-2">
         <button className="bg-emerald-500 hover:bg-emerald-400 px-6 py-2 text-gray-100">
           Save
         </button>
@@ -54,7 +93,7 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
         </button>
       </div>
 
-      <div className="grid lg:grid-cols-3 md:grid-cols-4 grid-cols-1 gap-4">
+      <div className="grid lg:grid-cols-3 md:grid-cols-4 grid-cols-1 gap-4 my-10 scrollbar overflow-y-scroll no-scrollbar">
         <div className="flex-col flex gap-2 lg:col-span-1 md:col-span-2 order-1">
           <label className="text-md mr-4" htmlFor="ID">
             ID
@@ -68,7 +107,7 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
               disabled
             />
           ) : (
-            <div className="rounded-md px-4 py-5 bg-zinc-800 border cursor-not-allowed animate-pulse" />
+            <div className="rounded-md px-4 py-5 dark:bg-zinc-800 bg-gray-200 border cursor-not-allowed animate-pulse" />
           )}
         </div>
 
@@ -84,30 +123,30 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
               value={data.title}
             />
           ) : (
-            <div className="rounded-md px-4 py-5 bg-zinc-800 border cursor-not-allowed animate-pulse" />
+            <div className="rounded-md px-4 py-5 dark:bg-zinc-800 bg-gray-200 border cursor-not-allowed animate-pulse" />
           )}
         </div>
 
-        <div className="flex flex-col gap-2 lg:col-span-1 lg:order-3 order-7 md:col-span-4 row-span-3">
+        <div className="flex flex-col gap-2 lg:col-span-1 lg:order-3 order-7 md:col-span-4 lg:row-span-3">
           <label
-            className="text-sm cursor-pointer bg-blue-500 hover:bg-blue-700 text-white text-center font-bold py-2 px-4 rounded"
+            className="w-2/3 mx-auto text-sm cursor-pointer bg-blue-500 hover:bg-blue-700 text-white text-center font-bold py-2 px-4 rounded"
             htmlFor="file-input"
           >
             <IconUpload className="mr-2 inline-block" />
             <p className="inline-block">Upload</p>
           </label>
-          <input type="file" className="hidden" id="file-input" />
+          <input type="file" className="hidden" id="file-input" multiple={false} onChange={(e) => uploadThumbnail(e.target.files![0])} />
 
           {data?.thumbnail ? (
             <Image
               src={data.thumbnail}
               alt={data.title}
-              width={100}
-              height={100}
-              className="rounded-md w-full max-h-72"
+              width={220}
+              height={120}
+              className="rounded-md max-h-72 mx-auto my-auto"
             />
           ) : (
-            <div className="rounded-md px-4 py-5 bg-zinc-800 border cursor-not-allowed animate-pulse" />
+            <div className="rounded-md px-4 py-5 lg:row-span-3 h-full dark:bg-zinc-800 bg-gray-200 border cursor-not-allowed animate-pulse" />
           )}
         </div>
 
@@ -124,7 +163,7 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
               defaultValue={new Date(data.modified!).toISOString().slice(0, 16)}
             />
           ) : (
-            <div className="rounded-md px-4 py-5 bg-zinc-800 border cursor-not-allowed animate-pulse" />
+            <div className="rounded-md px-4 py-5 dark:bg-zinc-800 bg-gray-200 border cursor-not-allowed animate-pulse" />
           )}
         </div>
 
@@ -135,7 +174,7 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
           {data?.status ? (
             <StatusSelect status={data.status} />
           ) : (
-            <div className="rounded-md px-4 py-5 bg-zinc-800 border cursor-not-allowed animate-pulse" />
+            <div className="rounded-md px-4 py-5 dark:bg-zinc-800 bg-gray-200 border cursor-not-allowed animate-pulse" />
           )}
         </div>
         <div className="flex flex-col gap-2 lg:col-span-2 md:col-span-4 lg:order-6 order-5">
@@ -149,7 +188,7 @@ const EditComic: FC<EditComicProps> = ({ id, setSelectedId }) => {
               value={data.description}
             />
           ) : (
-            <div className="rounded-md px-4 py-10 bg-zinc-800 border cursor-not-allowed animate-pulse" />
+            <div className="rounded-md px-4 py-10 dark:bg-zinc-800 bg-gray-200 border cursor-not-allowed animate-pulse" />
           )}
         </div>
       </div>
@@ -187,13 +226,12 @@ const StatusSelect: FC<{
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+          <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-zinc-800 py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
             {options.map((option, idx) => (
               <Listbox.Option
                 key={idx}
                 className={({ active }) =>
-                  `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                    active ? "bg-amber-100 text-amber-900" : "text-gray-900"
+                  `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? "bg-amber-100 text-amber-900 dark:bg-violet-500 dark:text-white" : "text-gray-900"
                   }`
                 }
                 value={option}
@@ -201,14 +239,13 @@ const StatusSelect: FC<{
                 {({ selected }) => (
                   <>
                     <span
-                      className={`block truncate ${
-                        selected ? "font-medium" : "font-normal"
-                      }`}
+                      className={`block truncate dark:text-white ${selected ? "font-medium" : "font-normal"
+                        }`}
                     >
                       {option.label}
                     </span>
                     {selected ? (
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600 dark:text-emerald-400">
                         <IconCheck className="h-5 w-5" aria-hidden="true" />
                       </span>
                     ) : null}
