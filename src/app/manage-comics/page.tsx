@@ -30,5 +30,8 @@ export default async function ManageComics() {
 
   const { data } = await supabase.from("comics").select("*");
 
-  return <ManageComicsTable data={data!} />;
+  return <div className="mb-20 w-full no-scrollbar">
+
+    <ManageComicsTable data={data!} />
+  </div>
 }
